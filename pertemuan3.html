@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sample Leaflet</title>
+ <link
+   rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+    <script 
+	src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin="">
+	</script>
+	
+	<style>
+	#mapid {height 700px; 
+	}
+	.leaflet-popup-content-wrapper { 
+	background-color:#eee;
+	color: purple;
+	text-align:center;
+	font-size:15px;
+}
+	.leaflet-popup-tip { 
+	background-color: #eee;
+}
+</style>
+</head>
+<body>
+<div id="mapid"></div>
+
+<script>
+var mymap = L.map('mapid').setView(-7.055322, 108.107062], 14);
+L.tileLayer('https://server.arcgisonline.com/arcGIS/rest/aervices/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+attribution: ' Tiles &copy; Esri &mdash; Esri, Delorme, NAVTEQ, TomTom, Intermap, 1PC, USGS, FAQ, NPS, NRCAN, GeoBase,
+}).addTo(mymap);
+
+//marker
+var customIcon = new L.Icon({ var customIcon 
+iconUrl: 'titik-lokasi.png',
+shadowUrl:'marker-shadow.png',
+iconSize: [25, 35],
+iconAnchor: [12, 35], 
+popupAnchor: [1, -35], 
+shadowSize: [35, 35]
+});
+
+var customIcon2 = new L.Icon({ var customIcon 
+iconUrl: 'lokasi.png',
+shadowUrl:'marker-shadow.png',
+iconSize: [35, 40],
+iconAnchor: [12, 36], 
+popupAnchor: [1, -36], 
+shadowSize: [36, 36]
+});
+
+var marker1 = L.marker ([-7.058750669528643, 108.04965046174183], {icon:customIcon})
+.addTo(mymap)
+.bindPopup{"Pondok Pesantrn Al-Ulfah"};
+
+var marker2 = L.marker ([-7.062881888229675, 108.04995086913554], {icon:customIcon})
+.addTo(mymap)
+.bindPopup{"Pasar Lewo"};
+
+var marker3 = L.marker ([-7.05240470504728, 108.0515387367881], {icon:customIcon})
+.addTo(mymap)
+.bindPopup{"Pom mini bunisari"};
+
+var marker4 = L.marker ([-7.0645002937434365, 108.048320086141051], {icon:customIcon})
+.addTo(mymap)
+.bindPopup{"situ cibuyut"};
+
+var marker5 = L.marker ([-7.066246461759756, 108.04986503845163], {icon:customIcon1})
+.addTo(mymap)
+.bindPopup{"lokasi saya"};
+.openPopup();
+
+//circle
+var textPopup = '<h3>Ini judul popup</h3>'; 
+textPopup += '<img src="ini zonasi saya.png" width="100%">';
+textPopup += '<p>dekat dengan pondok pesantren al-ulfah </p>’;
+var customPopup = new L.Popup({maxWidth: 150, maxHeight: 100, closeOnClick: false, autoClose: false})
+.setContent(textPopup);
+
+var circle = L.circle([-7.058750669528643, 108.04965046174183],{
+color: 'red',
+opacity: 1,
+fillColor: 'white',
+fillOpacity: 0.5,
+radius: 300,
+weight: 0.7,
+})
+.addTo(mymap)
+.bindPopup(customPopup);
+
+//Line
+var lineData = [
+		[-7.058750669528643, 108.04965046174183],
+		[-7.062881888229675, 108.04995086913554],
+		[-7.05240470504728, 108.0515387367881],
+		[-7.0645002937434365, 108.048320086141051],
+		[-7.066246461759756, 108.04986503845163],
+];
+
+var polyline = L.polyline(lineData, {
+color: 'grey',
+opacity: 1,
+fillColor: '#f03',
+fillOpacity: 0.5,
+weight: 4,
+
+}).addTo(mymap)bindPopup("jalan raya");
+
+var polygonData = [
+		[-7.058750669528643, 108.04965046174183],
+		[-7.062881888229675, 108.04995086913554],
+		[-7.05240470504728, 108.0515387367881],
+		[-7.0645002937434365, 108.048320086141051],
+		[-7.066246461759756, 108.04986503845163],
+		
+];
+var polygon = L.polygon(polygonData, {
+color: 'green',
+opacity: 0.5,
+weight: 1,
+fillColor: 'green',
+fillOpacity: 0.5,
+}).addTo(mymap).bindPopup("jalan raya");
+
+//popup latlong
+var popup = L.popup();
+function onMapClick(e){
+popup
+.setLatlng(e.latlng)
+.setContent(e.latlng.toString())
+.openOn(mymap);
+}
+mymap.on('click', onMapClick);
+
+// layer group
+var CartoDB_Positron = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_aN/(z}/{x}/{y}{r}.png', {
+attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy;',
+});
+
+var CartoDB_DarkMatter = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; ',
+});
+
+var Esri_WorldStreetMap =
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri' });
+
+var Esri_WorldImagery =
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN'
+});
+
+var layerGroup = {
+"Grayscale": CartoDB_Positron, "Dark": CartoDB_DarkMatter, "Street Map": Esri_WorldStreetMap, "Imagery": Esri_WorldImagery,
+};
+
+
+</script>
+</body>
+</html>

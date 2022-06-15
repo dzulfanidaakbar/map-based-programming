@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Map Based Programming Praktikum11</title>
+ <link
+   rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+   
+   <link rel="stylesheet" href="leaflet-search.css"/>
+   <link rel="stylesheet" href="src/leaflet.draw.css"/>
+    <script 
+	src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin="">
+	</script>
+	
+	<script src="leaflet-search.js"></script>
+	<script src="src/Leaflet.draw.js"></script>
+	<script src="src/Leaflet.Draw.Event.js"></script>
+	<script src="src/Toolbar.js"></script>
+	<script src="src/Tooltip.js"></script>
+	<script src="src/ext/GeometryUtil.js"></script>
+	<script src="src/ext/LatLngUtil.js"></script>
+	<script src="src/ext/LineUtil.Intersect.js"></script>
+	<script src="src/ext/Polygon.Intersect.js"></script>
+	<script src="src/ext/Polyline.Intersect.js"></script>
+	<script src="src/ext/TouchEvents.js"></script>
+	<script src="src/draw/DrawToolbar.js"></script>
+	<script src="src/draw/handler/Draw.Feature.js"></script>
+	<script src="src/draw/handler/Draw.SimpleShape.js"></script>
+	<script src="src/draw/handler/Draw.Polyline.js"></script>
+	<script src="src/draw/handler/Draw.Marker.js"></script>
+
+	<script src="src/draw/handler/Draw.Circle.js"></script>
+	<script src="src/draw/handler/Draw.CircleMarker.js"></script>
+	<script src="src/draw/handler/Draw.Polygon.js"></script>
+	<script src="src/draw/handler/Draw.Rectangle.js"></script>
+	<script src="src/edit/EditToolbar.js"></script>
+	<script src="src/edit/handler/EditToolbar.Edit.js"></script>
+	<script src="src/edit/handler/EditToolbar.Delete.js"></script>
+	<script src="src/Control.Draw.js"></script>
+	<script src="src/edit/handler/Edit.Poly.js"></script>
+	<script src="src/edit/handler/Edit.SimpleShape.js"></script>
+	<script src="src/edit/handler/Edit.Rectangle.js"></script>
+	<script src="src/edit/handler/Edit.Marker.js"></script>
+	<script src="src/edit/handler/Edit.CircleMarker.js"></script>
+	<script src="src/edit/handler/Edit.Circle.js"></script>
+	
+	<style>
+	#mapid {
+	height : 700px; 
+	}
+	.leaflet-popup-content-wrapper { 
+	background-color:black;
+	color: white;
+	text-align:center;
+	font-family:comic sans ms;
+	font-size:15px;
+}
+	.leaflet-popup-tip { 
+	background-color: white;
+}
+</style>
+</head>
+<body>
+<button onclick="load_polygon()">Load Polygon</button>
+<button onclick="load_line()">Load Line</button>
+<button onclick="load_marker()">Load Marker</button>
+<br>
+<button onclick="remove_polygon()">Hide Polygon</button>
+<button onclick="remove_line()">Hide Line</button>
+<button onclick="remove_marker()">Hide Marker</button>
+<br>
+<button onclick="covid_kasus_aktif()">Kasus Aktif Covid</button>
+<div id="mapid"></div>
+
+<script>
+//Layer Group
+var OpenStreetMap_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+});
+var Esri_WorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+});
+var Stadia_AlidadeSmoothDark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+});
+var Esri_WorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+});
+var Stadia_AlidadeSmooth = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+	attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+});
+
+var layerGroup = {
+"Open Street map": OpenStreetMap_Mapnik,
+"Esri World Street Map":Esri_WorldStreetMap,
+"Stadia Alidade":Stadia_AlidadeSmoothDark,
+"Esri World Imagery":Esri_WorldImagery,
+"Stadia Alideda Smooth":Stadia_AlidadeSmooth
+};
+
+
+//Marker Group
+var customIcon1 = new L.Icon({
+iconUrl: 'marker1.png',
+shadowUrl:'marker-shadow.png',
+iconSize: [25, 35],
+iconAnchor: [12, 35], 
+popupAnchor: [1, -35], 
+shadowSize: [35, 35]
+});
+
+var customIconSearch = new L.Icon({
+iconUrl: 'marker2.png',
+shadowUrl:'marker-shadow.png',
+iconSize: [25, 35],
+iconAnchor: [12, 35], 
+popupAnchor: [1, -35], 
+shadowSize: [35, 35]
+});
+
+var customIcon3 = L.Icon.extend({
+options: {
+
+iconSize: [35, 35],
+iconAnchor: [15, 25],
+shadowSize: [65, 35],
+iconUrl: 'map-marker.png',
+shadowUrl: 'marker-shadow.png',
+
+}
+
+});
+
+var marker1 = L.marker ([-7.058750669528643, 108.04965046174183], {icon:customIcon1})
+.bindPopup("Pondok Pesantrn Al-Ulfah");
+
+var marker2 = L.marker ([-7.062881888229675, 108.04995086913554], {icon:customIcon1})
+.bindPopup("Pasar Lewo");
+
+var marker3 = L.marker ([-7.05240470504728, 108.0515387367881], {icon:customIcon1})
+.bindPopup("Pom mini bunisari");
+
+var marker4 = L.marker ([-7.0645002937434365, 108.048320086141051], {icon:customIcon1})
+.bindPopup("situ cibuyut");
+
+var marker5 = L.marker ([-7.066246461759756, 108.04986503845163], {icon:customIcon1})
+.bindPopup("lokasi saya")
+.openPopup();
+
+var markerGroup = L.layerGroup([marker1, marker2, marker3, marker4, marker5]);
+
+
+
+//object groups
+var objectGroups = {
+"Titik penting": markerGroup,
+};
+
+
+//Base Map
+var mymap = L.map('mapid', {
+center: [-7.055322, 108.107062],
+zoom: 6,
+maxZoom: 20,
+minzoom: 6,
+zoomControl: false,
+layers: [
+ Esri_WorldStreetMap, Esri_WorldImagery,
+ Stadia_AlidadeSmoothDark,  Stadia_AlidadeSmooth 
+]
+});
+
+
+//Position Control
+L.control.layers(layerGroup, objectGroups, {position: 'topright'}).addTo(mymap);
+L.control.zoom({position: 'bottomright'}).addTo(mymap);
+
+//mymap.flyTo([-7.062881888229675, 108.04995086913554], 13);
+
+//search box
+ var controlSearch = new L.Control.Search({
+ url: 'https://nominatim.openstreetmap.org/search?format=json&q={s}',
+ jsonpParam: 'json_callback',
+ propertyName: 'display_name',
+ propertyLoc: ['lat','lon'],
+ marker: L.marker([0,0], {icon: customIconSearch}),
+ autoCollapse: true,
+ autoType: false,
+ minLength: 2,
+ position: 'topleft'
+})
+
+mymap.addControl(controlSearch);
+
+// draw editor
+var drawnItems = new L.FeatureGroup();
+mymap.addLayer(drawnItems);
+
+var drawControl = new L.Control.Draw({
+position: 'topleft',
+draw: {
+polyline: {
+shapeOptions: {
+color: '#f357a1',
+weight: 10
+}
+},
+polygon: {
+allowIntersection: false,
+drawError: {
+color: '#e1e100',
+message: '<strong>Tidak boleh saling tumpang tindih</strong>'
+},
+shapeOptions: {
+color: '#bada55'
+}
+},
+
+marker: {
+icon: new customIcon3()
+},
+circlemarker: false,
+rectangle: {
+shapeOptions: {
+clickable: false
+}
+},
+},
+edit: {
+featureGroup: drawnItems
+}
+});
+mymap.addControl(drawControl);
+
+//event draw
+mymap.on(L.Draw.Event.CREATED, function (event) {
+var layer = event.layer;
+drawnItems.addLayer(layer);
+});
+
+mymap.on('draw:created', function (e) {
+console.log('===================');
+drawnItems.eachLayer(function (layer) {
+var vector_geojson = layer.toGeoJSON();
+//console.log(vector_geojson);
+var vector_string = JSON.stringfy(vector_geojson);
+console.log(vector_string);
+});
+});
+mymap.on('draw:edited', function (e) {
+console.log('===================');
+drawnItems.eachLayer(function (layer) {
+var vector_geojson = layer.toGeoJSON()
+//console.log(vector_geojson);
+var vector_string = JSON.stringfy(vector_geojson);
+console.log(vector_string);
+});
+});
+
+
+//load geojson
+/*setTimeout(function(){
+let xhr = new XMLHttpRequest();
+xhr.open('GET', 'kota_bandung.geojson');
+xhr.setRequestHeader('Content-Type', 'application/json');
+xhr.setRequestHeader('Access-Control-Allow-Origin', '*');
+xhr.responseType = 'json';
+xhr.onload = function(){
+	if (xhr.status !== 200) return
+	L.geoJSON(xhr.response).addTo(mymap);
+};
+xhr.send();
+}, 3000); */
+
+var data_polygon;
+function load_polygon() {
+let xhr = new XMLHttpRequest();
+xhr.open('GET', 'poligon.geojson');
+xhr.setRequestHeader('Content.type', 'applocation/json');
+xhr.setRequestHeader('Acces-Control-Allow-Origin', '*');
+xhr.responseType = 'json';
+xhr.onload = function() {
+if (xhr.status !== 200) return
+
+//looping polygon
+data_polygon = xhr.response;
+xhr.response.features.forEach((element) => {
+var polygon_style = {
+fillColor: element.properties.color,
+fillOpacity: element.properties.opacity,
+color: element.properties.color,
+opacity: element.properties.opacity,
+};
+var customPopup = element.properties.keterangan;
+var customOptions ={
+'maxWidth': '500',
+'className' : 'custom'
+};
+L.geoJson(element, {style: polygon_style})
+.bindPopup(customPopup, customOptions)
+.addTo(mymap);
+});
+};
+xhr.send();
+}
+
+var data_line;
+function load_line() {
+let xhr = new XMLHttpRequest();
+xhr.open('GET', 'line.geojson');
+xhr.setRequestHeader('Content.type', 'applocation/json');
+xhr.setRequestHeader('Acces-Control-Allow-Origin', '*');
+xhr.responseType = 'json';
+xhr.onload = function() {
+if (xhr.status !== 200) return
+
+//looping line
+data_line = xhr.response;
+xhr.response.features.forEach((element) => {
+var line_style = {
+color: 'green',
+opacity: 1,
+fillColor: '#f03',
+fillOpacity: 0.5,
+weight: 4,
+};
+var customPopup = element.properties.notes;
+var customOptions ={
+'maxWidth': '500',
+'className' : 'custom'
+};
+L.geoJson(element, {style: line_style})
+.bindPopup(customPopup, customOptions)
+.addTo(mymap);
+});
+};
+xhr.send();
+}
+
+var data_marker;
+function load_marker() {
+let xhr = new XMLHttpRequest();
+xhr.open('GET', 'marker.geojson');
+xhr.setRequestHeader('Content.type', 'applocation/json');
+xhr.setRequestHeader('Acces-Control-Allow-Origin', '*');
+xhr.responseType = 'json';
+xhr.onload = function() {
+if (xhr.status !== 200) return
+
+//looping marker
+data_marker = xhr.response;
+xhr.response.features.forEach((element) => {
+var latitude = element.geometry.coordinates[1];
+var longitude = element.geometry.coordinates[0];
+var marker;
+if (element.properties.icon == "marker1.png") {
+marker = L.marker([latitude, longitude], {icon: customIcon1})
+} else if (element.properties.icon == "marker2.png") {
+marker = L.marker([latitude, longitude], {icon: customIcon2})
+} else {
+marker = L.marker([latitude, longitude])
+}
+marker.bindPopup(element.properties.titik).addTo(mymap);
+});
+};
+xhr.send();
+}
+
+function remove_polygon() {
+data_polygon.features.forEach((element) => {
+for(i in mymap._layers) {
+if(mymap._layers[i].feature != undefined) {
+if (mymap._layers[i].feature.properties.id == element.properties.id){
+try {
+mymap.removeLayer(mymap._layers[i]);
+}
+catch(e) {
+console.log("problem with " + e + mymap._layers[i]);
+}
+}
+}
+}
+});
+}
+
+function remove_line() {
+data_line.features.forEach((element) => {
+for(i in mymap._layers) {
+if(mymap._layers[i].feature != undefined) {
+if (mymap._layers[i].feature.properties.id == element.properties.id){
+try {
+mymap.removeLayer(mymap._layers[i]);
+}
+catch(e) {
+console.log("problem with " + e + mymap._layers[i]);
+}
+}
+}
+}
+});
+}
+
+
+function remove_marker() {
+for(i in mymap._layers) {
+if(mymap._layers[i]._icon != undefined) {
+try {
+mymap.removeLayer(mymap._layers[i]);
+}
+catch(e) {
+console.log("problem with " + e + mymap._layers[i]);
+}
+}
+}
+}
+
+//Load Covid
+var data_covid_kasus_aktif;
+function covid_kasus_aktif() {
+let xhr = new XMLHttpRequest();
+xhr.open('GET', 'kecamatan_di_kota_bandung.geojson');
+xhr.setRequestHeader('Content.type', 'applocation/json');
+xhr.setRequestHeader('Acces-Control-Allow-Origin', '*');
+xhr.responseType = 'json';
+xhr.onload = function() {
+if (xhr.status !== 200) return
+data_covid_kasus_aktif = xhr.response;
+// statistic kasus
+var list_data_covid = [];
+var max;
+data_covid_kasus_aktif.features.forEach((element) => {
+if (element.properties.covid_kasus_aktif > 0) {
+list_data_covid.push(element.properties.covid_kasus_aktif);
+}
+});
+max = Math.max.apply(Math, list_data_covid);
+
+// looping polygon
+data_covid_kasus_aktif.features.forEach((element) => {
+var polygon_style = {
+fillColor: "#950101",
+fillOpacity: element.properties.covid_kasus_aktif / max,
+color: "#000000",
+opacity: 0.8,
+weight: 2
+};
+var customPopup = "Kasus covid aktif di kecamatan ";
+customPopup += element.properties.Kecamatan + " : ";
+customPopup += element.properties.covid_kasus_aktif;
+var customOptions ={
+'maxWidth': '500',
+'className' : 'custom'
+};
+L.geoJson(element, {style: polygon_style})
+.bindPopup(customPopup, customOptions)
+.addTo(mymap);
+});
+};
+xhr.send();
+}
+
+
+
+</script>
+</body>
+</html>

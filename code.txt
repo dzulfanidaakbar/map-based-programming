@@ -1,0 +1,64 @@
+// draw editor
+		var drawnItems = new L.FeatureGroup();
+		mymap.addLayer(drawnItems);
+		
+		var drawControl = new L.Control.Draw({
+		position: 'topleft',
+		draw: {
+			marker: {
+				icon: new customIcon3()
+		},
+			polyline: {
+			shapeOptions: {
+				color: '#f357a1',
+				weight: 10
+			}
+		},
+			polygon: {
+			allowIntersection: false,
+			drawError: {
+				color: '#e1e100',
+				message: '<strong>Tidak boleh saling tumpang tindih</strong>'
+		},
+			shapeOptions: {
+			color: '#bada55'
+			}
+		},
+			circlemarker: false,
+			rectangle: {
+				shapeOptions: {
+					clickable: false
+			}
+		},
+		},
+			edit: {
+				featureGroup: drawnItems
+		}
+		});
+		mymap.addControl(drawControl);
+		
+		//event draw
+		mymap.on(L.Draw.Event.CREATED, function (event) {
+			var layer = event.layer;
+			drawnItems.addLayer(layer);
+		});
+		
+		mymap.on('draw:created', function (e) {
+			console.log('===================');
+			drawnItems.eachLayer(function (layer) {
+				var vector_geojson = layer.toGeoJSON()
+				//console.log(shape);
+				var vector_string = JSON.stringify(vector_geojson);
+				console.log(vector_string);
+			});
+		});
+		
+		mymap.on('draw:edited', function (e) {
+			console.log('===================');
+			drawnItems.eachLayer(function (layer) {
+				var vector_geojson = layer.toGeoJSON()
+				//console.log(shape);
+				var vector_string = JSON.stringify(vector_geojson);
+				console.log(vector_string);
+			});
+		});

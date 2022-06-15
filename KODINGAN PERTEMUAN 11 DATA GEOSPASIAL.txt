@@ -1,0 +1,60 @@
+//POINT
+SELECT gid, name, long_name, borough, color, geom, 
+st_geometrytype(geom), st_astext(geom), st_x(geom), st_y(geom),
+st_asgeojson(geom), st_askml(geom), st_assvg(geom)
+FROM nyc_subway_stations
+WHERE borough = 'Manhattan' AND color ='RED'
+LIMIT 20
+
+
+//LINE
+SELECT id, name, type, geom,
+st_geometrytype(geom), st_astext(geom),
+st_asgeojson(geom), st_askml(geom), st_assvg(geom),
+st_length(geom), st_startpoint(geom), st_endpoint(geom), st_npoints(geom)  // imi fungsi untuk di line saja
+FROM nyc_streets
+WHERE type = 'residential'
+order by st_length(geom) desc
+LIMIT 10
+
+SELECT id, name, type, geom,
+st_geometrytype(geom), st_astext(geom),
+st_asgeojson(geom), st_askml(geom), st_assvg(geom),
+st_length(geom), st_startpoint(geom), st_endpoint(geom), st_npoints(geom)
+FROM nyc_streets
+order by st_length(geom) desc
+LIMIT 10
+
+
+//POLYGON
+SELECT gid, boroname, name, geom,
+st_geometrytype(geom), st_astext(geom),
+st_asgeojson(geom), st_askml(geom), st_assvg(geom),
+st_area(geom), st_nrings(geom), st_perimeter(geom)
+FROM nyc_neighborhoods
+WHERE boroname= 'Queens'
+order by st_area(geom) desc
+LIMIT 20
+
+SELECT gid, boroname, name, geom,
+st_geometrytype(geom), st_astext(geom),
+st_asgeojson(geom), st_askml(geom), st_assvg(geom),
+st_area(geom), st_nrings(geom), st_perimeter(geom)
+FROM nyc_neighborhoods
+order by st_nrings(geom) desc
+LIMIT 20
+
+SELECT gid, boroname, name, geom,
+st_geometrytype(geom), st_astext(geom),
+st_asgeojson(geom), st_askml(geom), st_assvg(geom),
+st_area(geom), st_nrings(geom), st_perimeter(geom)
+FROM nyc_neighborhoods
+order by st_perimeter(geom) desc
+LIMIT 20
+
+
+//TAMBAHAN
+SELECT type, Sum (ST_Length(geom)) AS length
+FROM nyc_streets
+GROUP BY type
+ORDER BY length DESC;
